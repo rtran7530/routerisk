@@ -22,56 +22,56 @@ Only information available at departure is used for prediction. Drop-off timesta
 
 ## Mathematical Overview
 
-Let $T>0$ be trip duration in minutes and $X=(Z_o,Z_d,H,W)\in\mathcal X$ contain departure information. The zone identifiers $Z_o,Z_d\in\mathcal Z$ denote pickup and destination zones, while $H\in\{0,\ldots,23\}$ and $W\in\{0,\ldots,6\}$ denote hour and weekday, respectively.
+Let $T>0$ denote trip duration in minutes and $X=(Z_o,Z_d,H,W)\in\mathcal{X}$ represent departure information. The zone identifiers $Z_o,Z_d\in\mathcal{Z}$ specify pickup and destination zones, while $H\in\lbrace 0,\ldots,23\rbrace$ and $W\in\lbrace 0,\ldots,6\rbrace$ denote the departure hour and weekday, respectively.
 
 ### Travel-Time Estimation
 
-Ridge regression models $\log(1+T)$ using encoded zone and calendar features $\phi(x)\in\mathbb R^p$. The fitted travel-time estimate is
+Ridge regression models $\log(1+T)$ using encoded zone and calendar features $\phi(x)\in\mathbb{R}^p$. The fitted travel-time estimate is
 
 $$
-\widehat T(x)=\max\!\left\{0,\exp\!\left(\widehat\beta_0+\widehat\beta^\top\phi(x)\right)-1\right\},\qquad x\in\mathcal X.
+\widehat{T}(x) = \max\bigl(0, \exp(\widehat{\beta}_0 + \widehat{\beta}^{\top}\phi(x)) - 1\bigr), \qquad x \in \mathcal{X}.
 $$
 
 ### Prediction Intervals
 
-Split-conformal prediction uses absolute calibration residuals $r_i=|T_i-\widehat T(X_i)|$. Their calibrated quantile $q_\alpha$ determines an interval for a new trip:
+Split-conformal prediction uses absolute calibration residuals $r_i=|T_i-\widehat{T}(X_i)|$. The conformal quantile $q_\alpha$ is computed from these residuals and determines a prediction interval for a new trip:
 
 $$
-C_\alpha(x)=\left[\max\{0,\widehat T(x)-q_\alpha\},\ \widehat T(x)+q_\alpha\right],\qquad \alpha\in(0,1).
+C_\alpha(x) = \bigl[\max(0,\widehat{T}(x)-q_\alpha),\ \widehat{T}(x)+q_\alpha\bigr], \qquad x\in\mathcal{X},\ \alpha\in(0,1).
 $$
 
-The default $\alpha=0.10$ corresponds to 90% nominal marginal coverage under exchangeability. Coverage is checked on later months, where travel patterns may differ.
+The default $\alpha=0.10$ corresponds to 90% nominal marginal coverage under exchangeability. Coverage is evaluated on later months, where travel patterns may differ.
 
 ### Delay Risk
 
-For a travel-time limit $\tau>0$, the calibrated classifier estimates the exceedance probability
+For a travel-time limit $\tau>0$, the calibrated classifier estimates the conditional exceedance probability:
 
 $$
-p_\tau(x)=\Pr(T>\tau\mid X=x),\qquad x\in\mathcal X.
+\widehat{p}_\tau(x)\approx\Pr(T>\tau\mid X=x), \qquad x\in\mathcal{X}.
 $$
 
-The default threshold is 30 minutes. This is a duration threshold, not a scheduled-arrival deadline.
+The default threshold of 30 minutes defines the duration used to classify a trip as delayed.
 
-## Statistical Analysis
+## Statistical Evaluation
 
 The first month is used for training and the second for calibration. Subsequent months provide out-of-sample observations for evaluating duration error and predictive reliability. Mean absolute error (MAE) is compared with a median-duration baseline.
 
 ### Interval Coverage
 
-Empirical coverage is the proportion of test trips whose observed durations fall inside their prediction intervals:
+Empirical coverage measures the proportion of test trips whose observed durations fall within their prediction intervals:
 
 $$
-\widehat{\mathrm{Coverage}}=\frac{1}{n}\sum_{i=1}^{n}\mathbf 1\{T_i\in C_\alpha(X_i)\}.
+\widehat{\mathrm{Coverage}} = \frac{1}{n}\sum_{i=1}^{n}\mathbf{1}_{\lbrace T_i\in C_\alpha(X_i)\rbrace}.
 $$
 
-Here, $n\in\mathbb N$ is the number of test trips. The observed coverage is compared with the nominal 90% level.
+Here, $n\in\mathbb{N}$ denotes the number of test trips. The indicator function $\mathbf{1}_{\lbrace A\rbrace}$ equals 1 when condition $A$ holds and 0 otherwise. The empirical coverage is compared with the nominal 90% level.
 
 ### Delay Probability Accuracy
 
-The Brier score compares predicted delay probabilities $\widehat p_i\in[0,1]$ with observed exceedance outcomes:
+The Brier score measures the squared error between predicted delay probabilities $\widehat{p}_i\in[0,1]$ and observed exceedance outcomes:
 
 $$
-\mathrm{BS}=\frac{1}{n}\sum_{i=1}^{n}\left(\widehat p_i-\mathbf 1\{T_i>\tau\}\right)^2.
+\mathrm{BS} = \frac{1}{n}\sum_{i=1}^{n}\left(\widehat{p}_i-\mathbf{1}_{\lbrace T_i>\tau\rbrace}\right)^2.
 $$
 
 A lower score indicates better probabilistic accuracy. Calibration is assessed separately by comparing predicted probabilities with observed delay frequencies.
