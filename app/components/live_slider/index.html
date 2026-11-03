@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.wrap { padding: 5px 2px 8px; }
+.line { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+label { font-size:13px; font-weight:600; }
+.value { font-size:13px; font-weight:650; font-variant-numeric:tabular-nums; }
+.range { display:flex; gap:12px; align-items:center; }
+input[type=range] { width:100%; height:7px; cursor:pointer; accent-color:var(--accent); margin:7px 0; }
+.detail { display:flex; justify-content:space-between; font-size:11px; margin-top:0; }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="line"><label id="label" for="slider">Value</label><span class="value" id="value"></span></div>
+  <div class="range"><input id="slider" type="range" min="0" max="100" step="1" value="0" aria-label="Value" /></div>
+  <div class="detail"><span id="minimum">0</span><span id="maximum">100</span></div>
+</div>
+<script>
+const slider = document.getElementById('slider');
+const val = document.getElementById('value');
+const root = document.documentElement;
+let active = false;
+let lastSent = null;
+let lastSendTime = 0;
+let pending = null;
+let currentArgs = {};
+function host(type, payload={}) { window.parent.postMessage({isStreamlitMessage:true, type, ...payload}, '*'); }
+function draw() { val.textContent = `${slider.value}${currentArgs.unit || ''}`; }
+function send() {
+  const x = Number(slider.value);
+  if (x === lastSent) return;
+  lastSent = x;
+  lastSendTime = Date.now();
+  host('streamlit:setComponentValue', {value:x, dataType:'json'});
+}
+slider.addEventListener('pointerdown',()=>{active=true});
+window.addEventListener('pointerup',()=>{active=false;clearTimeout(pending);send()});
+slider.addEventListener('change',()=>{active=false;clearTimeout(pending);send()});
+slider.addEventListener('input',()=>{
+  draw();
+  // Streamlit receives intermediate values instead of waiting for pointer release.
+  if (Date.now()-lastSendTime>=280) send();
+  else {clearTimeout(pending);pending=setTimeout(send,280)}
+});
+window.addEventListener('message',(event)=>{
+  const data=event.data;
+  if (!data || data.type!=='streamlit:render') return;
+  const a=data.args || {};
+  currentArgs=a;
+  root.style.setProperty('--accent', a.accent||'#315d7a');
+  document.body.style.color=a.ink||'#172638';
+  document.body.style.background=a.bg||'#ffffff';
+  document.getElementById('label').textContent=a.label||'Value';
+  document.getElementById('minimum').textContent=a.min;
+  document.getElementById('maximum').textContent=a.max;
+  document.querySelector('.detail').style.color=a.muted||'#58697a';
+  slider.min=a.min;slider.max=a.max;slider.step=a.step||1;
+  if (!active && document.activeElement!==slider) slider.value=a.value;
+  draw();
+  host('streamlit:setFrameHeight',{height:92});
+});
+host('streamlit:componentReady',{apiVersion:1});
+host('streamlit:setFrameHeight',{height:92});
+</script>
+</body>
+</html>
