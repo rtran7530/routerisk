@@ -4,7 +4,7 @@
 
 <sub>Photo: [David R. Tribble](https://commons.wikimedia.org/wiki/File:Taxi-cabs-New-York-0986.jpg), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), unmodified.</sub>
 
-RouteRisk is a statistical travel-time analysis project that uses historical [New York City yellow-taxi records](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) to estimate trip durations and the probability of exceeding a specified time limit. By evaluating predictions on subsequent months, the project examines how accurately the models predict travel times and how reliably their uncertainty estimates remain calibrated.
+RouteRisk, a statistical travel-time modeling project, uses historical [New York City yellow-taxi records](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) to estimate trip durations and the probability of exceeding a specified time limit. The models are tested on data from later months to evaluate their predictive accuracy and reliability over time.
 
 ## Features
 
@@ -137,7 +137,9 @@ Results are written to `artifacts/` and `data/processed/`. Raw trip records are 
 
 ## Limitations
 
-RouteRisk predicts travel times between taxi zones using historical departure patterns, not live traffic conditions or street-level routes. The analysis excludes trips outside its cleaning criteria, including durations shorter than 2 minutes or longer than 180 minutes, so the findings do not represent every taxi journey. Because the models are fitted on earlier data, changes in traffic patterns may affect prediction accuracy and calibration. The nominal conformal coverage guarantee assumes exchangeable observations, an assumption that may not hold across different months.
+RouteRisk estimates travel times between taxi zones rather than along specific street routes, and it does not incorporate live traffic conditions. Trips shorter than 2 minutes or longer than 180 minutes are excluded; therefore, the results apply only to the retained records, not to all NYC taxi trips.
+
+Because the models use historical observations, changing travel conditions may reduce predictive accuracy and calibration. Similarly, conformal coverage guarantees require exchangeability, which may not hold when evaluating later months.
 
 ## References
 
