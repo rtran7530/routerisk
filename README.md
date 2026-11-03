@@ -29,7 +29,7 @@ Let $T>0$ be trip duration in minutes and $X=(Z_o,Z_d,H,W)\in\mathcal X$ contain
 Ridge regression models $\log(1+T)$ using encoded zone and calendar features $\phi(x)\in\mathbb R^p$. The fitted travel-time estimate is
 
 $$
-\widehat{T}(x) = \max\bigl(0, \exp(\widehat{\beta}_0 + \widehat{\beta}^{\top}\phi(x)) - 1\bigr), \qquad x \in \mathcal{X}.
+\widehat T(x)=\max\!\left\{0,\exp\!\left(\widehat\beta_0+\widehat\beta^\top\phi(x)\right)-1\right\},\qquad x\in\mathcal X.
 $$
 
 ### Prediction Intervals
